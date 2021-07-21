@@ -27,7 +27,7 @@ namespace AutoBackupService.Executor
                 taskVO = (CopyTaskVO)TaskVO;
             }
 
-            WriteLog(taskVO.SourcePath, "Start copy task [" + taskVO.TaskName + "].");
+            Logger.WriteLog("Start copy task [" + taskVO.TaskName + "].");
             //取得所有文件列表
             List<String> fileList = new List<string>();
             SearchOption so = taskVO.Method.Equals(CopyTaskVO.TaskMethodEnum.Current) ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories;
@@ -42,26 +42,26 @@ namespace AutoBackupService.Executor
                     DirectoryInfo targetDir = new DirectoryInfo(taskVO.TargetPath);
                     foreach (FileInfo file in files)
                     {
-                        WriteLog(taskVO.SourcePath, "Check file [" + file.FullName + "].");
+                        Logger.WriteLog("Check file [" + file.FullName + "].");
                         string targetFileName = file.FullName.Replace(taskVO.SourcePath, "");
                         FileInfo[] targetFiles = targetDir.GetFiles(targetFileName, so);
                         if (targetFiles != null && targetFiles.Length > 0)
                         {
-                            WriteLog(taskVO.SourcePath, "Find target file [" + targetFiles[0].FullName + "].");
+                            Logger.WriteLog("Find target file [" + targetFiles[0].FullName + "].");
                             string sourceFileHash = GetHash(file.FullName);
                             string targetFileHash = GetHash(targetFiles[0].FullName);
 
                             if (!sourceFileHash.Equals(targetFileHash))
                             {
-                                WriteLog(taskVO.SourcePath, "File [" + targetFiles[0].FullName + "] is not same with the source [" + file.FullName + "].");
+                                Logger.WriteLog("File [" + targetFiles[0].FullName + "] is not same with the source [" + file.FullName + "].");
                                 DeleteFile(targetFiles[0]);
-                                WriteLog(taskVO.SourcePath, "File [" + targetFiles[0].FullName + "] removed.");
+                                Logger.WriteLog("File [" + targetFiles[0].FullName + "] removed.");
                             }
                         }
 
                         string targetFullFileName = Path.Combine(new string[] { targetDir.FullName, targetFileName });
                         CopyFile(file.FullName, targetFullFileName);
-                        WriteLog(taskVO.SourcePath, "File [" + file.FullName + "] has been copied to [" + targetFullFileName + "]");
+                        Logger.WriteLog("File [" + file.FullName + "] has been copied to [" + targetFullFileName + "]");
                     }
                 }
             }

@@ -98,6 +98,7 @@
     <Compile Include="ExecutorFactory.cs" />
     <Compile Include="Executor\CopyTaskExecutor.cs" />
     <Compile Include="Executor\ExecutorBase.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
