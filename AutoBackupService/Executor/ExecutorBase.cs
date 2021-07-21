@@ -22,15 +22,5 @@ namespace AutoBackupService.Executor
             stream.Close();
             return BitConverter.ToString(hashByte).Replace("-", "");
         }
-
-        protected static void DeleteFile(FileInfo fileInfo)
-        {
-            File.Delete(fileInfo.FullName);
-        }
-
-        protected static void CopyFile(string sourceFullFileName, string targetFullFileName)
-        {
-            File.Copy(sourceFullFileName, targetFullFileName);
-        }
     }
 }

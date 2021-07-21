@@ -27,29 +27,29 @@ namespace AutoBackupService
             //初始化
             InitService();
 
-            Logger.WriteLog("Inital finished.");
+            Logger.WriteLog("SERVICE", "Inital finished.");
         }
 
         private List<TaskBaseVO>  ReadTasks()
         {
-            Logger.WriteLog("Start reading tasks.");
+            Logger.WriteLog("SERVICE", "Start reading tasks.");
 
             //取当前可执行文件位置
             string filePath = System.AppDomain.CurrentDomain.BaseDirectory;
 
             filePath = Path.Combine(new string[] { filePath, IniFilename });
-            Logger.WriteLog("Task file full path on " + filePath);
+            Logger.WriteLog("SERVICE", "Task file full path on " + filePath);
 
             List<TaskBaseVO> tasks = new List<TaskBaseVO>();
             string[] sectionNames = INIOperationClass.INIGetAllSectionNames(filePath);
-            Logger.WriteLog("Section name count: " + (sectionNames == null ? "0"  : sectionNames.Length.ToString()));
+            Logger.WriteLog("SERVICE", "Section name count: " + (sectionNames == null ? "0"  : sectionNames.Length.ToString()));
 
             foreach (string secName in sectionNames)
             {
                 if (secName.ToUpper().Contains(TaskPrefix))
                 {
                     string taskType = INIOperationClass.INIGetStringValue(filePath, secName, "TaskType", string.Empty);
-                    Logger.WriteLog("Type of task ["+secName+"]: " + taskType);
+                    Logger.WriteLog("SERVICE", "Type of task [" + secName+"]: " + taskType);
 
                     if (!string.IsNullOrEmpty(taskType))
                     {
@@ -57,19 +57,19 @@ namespace AutoBackupService
                         {
                             TaskBaseVO task = TaskFactory.CreateTaskVO(CopyTaskType);
 
-                            Logger.WriteLog("Base task created");
+                            //Logger.WriteLog("SERVICE", "Base task created");
 
                             if (task != null)
                             {
                                 string[] keys = INIOperationClass.INIGetAllItemKeys(filePath, secName);
 
-                                Logger.WriteLog("Task key count:" + (keys == null ? "0" : keys.Length.ToString()));
+                                //Logger.WriteLog("SERVICE", "Task key count:" + (keys == null ? "0" : keys.Length.ToString()));
 
                                 foreach (string key in keys)
                                 {
                                     string value = INIOperationClass.INIGetStringValue(filePath, secName, key, string.Empty);
 
-                                    Logger.WriteLog("Value of task key ["+key+"]: " + value);
+                                    //Logger.WriteLog("SERVICE", "Value of task key [" + key+"]: " + value);
 
                                     task.InitTaskKeyValue(key, value);
                                 }
@@ -81,7 +81,7 @@ namespace AutoBackupService
                 }
             }
 
-            Logger.WriteLog(tasks.Count.ToString() + " task(s) created.");
+            Logger.WriteLog("SERVICE", tasks.Count.ToString() + " task(s) created.");
             return tasks;
         }
 
@@ -125,21 +125,22 @@ namespace AutoBackupService
         private void InitService()
         {
             EventLog.WriteEntry("AutoBackupService Started.");//在系统事件查看器里的应用程序事件里来源的描述
-            Logger.WriteLog("Service Started.");
+            Logger.WriteLog("SERVICE", "Service Started.");
             System.Timers.Timer exeTimer = new System.Timers.Timer
             {
                 Interval = 5000 //执行间隔（毫秒）
             };
-            Logger.WriteLog("Set task scan interval as "+exeTimer.Interval.ToString()+"(ms).");
+            Logger.WriteLog("SERVICE", "Set task scan interval as " + exeTimer.Interval.ToString()+"(ms).");
             exeTimer.Elapsed += new System.Timers.ElapsedEventHandler(RunCheck);//到达时间的时候执行事件； 
             exeTimer.AutoReset = true;//设置是执行一次（false）还是一直执行(true)； 
-            Logger.WriteLog("Set AutoReset as " + exeTimer.AutoReset);
+            Logger.WriteLog("SERVICE", "Set AutoReset as " + exeTimer.AutoReset);
             exeTimer.Enabled = true;//是否执行System.Timers.Timer.Elapsed事件； 
-            Logger.WriteLog("Timer enabled.");
+            Logger.WriteLog("SERVICE", "Timer enabled.");
         }
 
         protected override void OnStop()
         {
+            Logger.WriteLog("SERVICE", "Service stopped.");
             EventLog.WriteEntry("AutoBackupService Stopped.");//在系统事件查看器里的应用程序事件里来源的描述
         }
     }

@@ -27,7 +27,7 @@ namespace AutoBackupService.Executor
                 taskVO = (CopyTaskVO)TaskVO;
             }
 
-            Logger.WriteLog("Start copy task [" + taskVO.TaskName + "].");
+            Logger.WriteLog("TASK", "Start copy task [" + taskVO.TaskName + "].");
             //取得所有文件列表
             List<String> fileList = new List<string>();
             SearchOption so = taskVO.Method.Equals(CopyTaskVO.TaskMethodEnum.Current) ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories;
@@ -42,26 +42,40 @@ namespace AutoBackupService.Executor
                     DirectoryInfo targetDir = new DirectoryInfo(taskVO.TargetPath);
                     foreach (FileInfo file in files)
                     {
-                        Logger.WriteLog("Check file [" + file.FullName + "].");
-                        string targetFileName = file.FullName.Replace(taskVO.SourcePath, "");
-                        FileInfo[] targetFiles = targetDir.GetFiles(targetFileName, so);
-                        if (targetFiles != null && targetFiles.Length > 0)
-                        {
-                            Logger.WriteLog("Find target file [" + targetFiles[0].FullName + "].");
-                            string sourceFileHash = GetHash(file.FullName);
-                            string targetFileHash = GetHash(targetFiles[0].FullName);
+                        //Logger.WriteLog("TASK", "Check source file [" + file.FullName + "].");
+                        string targetFileName = file.FullName.Replace(taskVO.SourcePath, taskVO.TargetPath);
+                        //Logger.WriteLog("TASK", "Target file name [" + targetFileName + "].");
 
-                            if (!sourceFileHash.Equals(targetFileHash))
+                        try
+                        {
+                            if (File.Exists(targetFileName))
                             {
-                                Logger.WriteLog("File [" + targetFiles[0].FullName + "] is not same with the source [" + file.FullName + "].");
-                                DeleteFile(targetFiles[0]);
-                                Logger.WriteLog("File [" + targetFiles[0].FullName + "] removed.");
+                                //Logger.WriteLog("TASK", "Found target file [" + targetFileName + "].");
+                                string sourceFileHash = GetHash(file.FullName);
+                                //Logger.WriteLog("TASK", "Source file hash code: [" + sourceFileHash + "].");
+                                string targetFileHash = GetHash(targetFileName);
+                                //Logger.WriteLog("TASK", "Target file hash code: [" + targetFileHash + "].");
+
+                                if (!sourceFileHash.Equals(targetFileHash))
+                                {
+                                    //Logger.WriteLog("TASK", "File [" + targetFileName + "] is not same with the source [" + file.FullName + "].");
+                                    File.Delete(targetFileName);
+                                    Logger.WriteLog("File [" + targetFileName + "] removed.");
+                                }
                             }
+                            else
+                            {
+                                //Logger.WriteLog("TASK", "Target file was not found.");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.WriteLog("TASK", ex.Message);
                         }
 
                         string targetFullFileName = Path.Combine(new string[] { targetDir.FullName, targetFileName });
-                        CopyFile(file.FullName, targetFullFileName);
-                        Logger.WriteLog("File [" + file.FullName + "] has been copied to [" + targetFullFileName + "]");
+                        File.Copy(file.FullName, targetFullFileName);
+                        Logger.WriteLog("TASK", "File [" + file.FullName + "] copied to [" + targetFullFileName + "]");
                     }
                 }
             }
