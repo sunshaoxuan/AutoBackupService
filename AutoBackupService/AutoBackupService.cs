@@ -14,6 +14,8 @@ namespace AutoBackupService
 
         private const string IniFilename = "TaskData.ini";
         private const string TaskPrefix = "TASK";
+        private string TaskFileHash = "";
+        private List<TaskBaseVO> TaskList = null;
 
         protected List<int> RunningTasks = new List<int>();
 
@@ -32,24 +34,33 @@ namespace AutoBackupService
 
         private List<TaskBaseVO>  ReadTasks()
         {
-            Logger.WriteLog("SERVICE", "Start reading tasks.");
-
             //取当前可执行文件位置
             string filePath = System.AppDomain.CurrentDomain.BaseDirectory;
-
             filePath = Path.Combine(new string[] { filePath, IniFilename });
-            Logger.WriteLog("SERVICE", "Task file full path on " + filePath);
+
+            //第一次进入及配置文件有修改才读取任务清单
+            string fileHash = PublicUtils.GetHash(filePath);
+            if (fileHash.Equals(TaskFileHash))
+            {
+                return TaskList;
+            }
+            else
+            {
+                TaskFileHash = fileHash;
+            }
+
+            Logger.WriteLog("SERVICE", "Start reading tasks.");
 
             List<TaskBaseVO> tasks = new List<TaskBaseVO>();
             string[] sectionNames = INIOperationClass.INIGetAllSectionNames(filePath);
-            Logger.WriteLog("SERVICE", "Section name count: " + (sectionNames == null ? "0"  : sectionNames.Length.ToString()));
+            Logger.WriteLog("SERVICE", "Task count: " + (sectionNames == null ? "0"  : sectionNames.Length.ToString()));
 
             foreach (string secName in sectionNames)
             {
                 if (secName.ToUpper().Contains(TaskPrefix))
                 {
                     string taskType = INIOperationClass.INIGetStringValue(filePath, secName, "TaskType", string.Empty);
-                    Logger.WriteLog("SERVICE", "Type of task [" + secName+"]: " + taskType);
+                    //Logger.WriteLog("SERVICE", "Type of task [" + secName+"]: " + taskType);
 
                     if (!string.IsNullOrEmpty(taskType))
                     {
@@ -74,6 +85,7 @@ namespace AutoBackupService
                                     task.InitTaskKeyValue(key, value);
                                 }
 
+                                task.SessionRunTimes = 0;
                                 tasks.Add(task);
                             }
                         }
@@ -87,10 +99,20 @@ namespace AutoBackupService
 
         public void RunCheck(object source, System.Timers.ElapsedEventArgs e)
         {
-            List<TaskBaseVO> taskList = ReadTasks();
+            TaskList  = ReadTasks();
 
-            foreach(TaskBaseVO task in taskList)
+            foreach(TaskBaseVO task in TaskList)
             {
+                if (task.LastRunTime != null)
+                {
+                    if (task.LastRunTime.AddMilliseconds(task.Interval).CompareTo(DateTime.Now) > 0)
+                    {
+                        //未到执行时间跳过
+                        continue;
+                    }
+                }
+
+                //没在已执行列表中的才可以执行，暂不支持多线程执行同一任务
                 if (!RunningTasks.Contains(task.GetHashCode()))
                 {
                     RunTasksWithNewThread(task);
@@ -116,7 +138,6 @@ namespace AutoBackupService
 
         private void RunTask(TaskBaseVO task)
         {
-
             ExecutorBase executor = ExecutorFactory.CreateExecutor(task);
             executor.TaskVO = task;
             executor.Execute();
@@ -128,7 +149,7 @@ namespace AutoBackupService
             Logger.WriteLog("SERVICE", "Service Started.");
             System.Timers.Timer exeTimer = new System.Timers.Timer
             {
-                Interval = 3600000 //执行间隔（毫秒）
+                Interval = 1000 //执行间隔（毫秒）
             };
             Logger.WriteLog("SERVICE", "Set task scan interval as " + exeTimer.Interval.ToString()+"(ms).");
             exeTimer.Elapsed += new System.Timers.ElapsedEventHandler(RunCheck);//到达时间的时候执行事件； 

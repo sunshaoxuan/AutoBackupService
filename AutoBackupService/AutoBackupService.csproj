@@ -104,6 +104,7 @@
     <Compile Include="ProjectInstaller.Designer.cs">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
+    <Compile Include="PublicUtils.cs" />
     <Compile Include="TaskFactory.cs" />
     <Compile Include="Task\CopyTaskVO.cs" />
     <Compile Include="INIOperationClass.cs" />

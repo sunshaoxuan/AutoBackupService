@@ -1,83 +1,122 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AutoBackupService.Executor
 {
     public class CopyTaskExecutor : ExecutorBase
     {
-        public override void Execute()
+        public override void AfterExecute()
+        {
+            TaskVO.LastRunTerm = DateTime.Now.Subtract(TaskVO.LastRunTime).Milliseconds;
+            TaskVO.SessionRunTimes++;
+            Logger.WriteLog("TASK", "Copy task [" + TaskVO.TaskName + "] finished.");
+            Logger.WriteLog("TASK", "Copy task [" + TaskVO.TaskName + "] spent " + TaskVO.LastRunTerm + "(ms).");
+            TaskVO.NextRunTime = DateTime.Now.AddMilliseconds(TaskVO.Interval);
+            Logger.WriteLog("TASK", "Copy task [" + TaskVO.TaskName + "] will run at " + TaskVO.NextRunTime + " next time.");
+        }
+
+        public override void BeforeExecute()
         {
             if (TaskVO == null)
             {
                 throw new Exception("任務不能為空");
             }
 
-            CopyTaskVO taskVO = null;
             if (!(TaskVO is CopyTaskVO))
             {
                 throw new Exception("任務類型錯誤");
             }
-            else
+
+            TaskVO.LastRunTime = DateTime.Now;
+            Logger.WriteLog("TASK", "Start copy task [" + TaskVO.TaskName + "].");
+        }
+
+        public override void DoExecute()
+        {
+            CopyTaskVO taskVO = (CopyTaskVO)TaskVO;
+
+            if (!taskVO.Method.Equals(CopyTaskVO.TaskMethodEnum.Current))
             {
-                taskVO = (CopyTaskVO)TaskVO;
+                CopyDir(taskVO.SourcePath, taskVO.TargetPath, taskVO.DirPattern, taskVO.FilePattern);
             }
 
-            Logger.WriteLog("TASK", "Start copy task [" + taskVO.TaskName + "].");
-            //取得所有文件列表
-            List<String> fileList = new List<string>();
-            SearchOption so = taskVO.Method.Equals(CopyTaskVO.TaskMethodEnum.Current) ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories;
-            foreach (string filter in taskVO.SourceFileFilters)
+            CopyFile(taskVO.SourcePath, taskVO.TargetPath, taskVO.FilePattern);
+        }
+
+        private void CopyDir(string sourcePath, string targetPath, string[] dirPatterns, string[] filePatterns)
+        {
+            DirectoryInfo sourceDir = new DirectoryInfo(sourcePath);
+            foreach (string dirPattern in dirPatterns)
             {
-                DirectoryInfo sourceDir = new DirectoryInfo(taskVO.SourcePath);
-                FileInfo[] files = null;
-                files = sourceDir.GetFiles(filter, so);
-
-                if (files != null && files.Length > 0)
+                DirectoryInfo[] dirs = sourceDir.GetDirectories("*", SearchOption.TopDirectoryOnly);
+                if (dirs != null && dirs.Length > 0)
                 {
-                    DirectoryInfo targetDir = new DirectoryInfo(taskVO.TargetPath);
-                    foreach (FileInfo file in files)
+                    foreach(DirectoryInfo dir in dirs)
                     {
-                        //Logger.WriteLog("TASK", "Check source file [" + file.FullName + "].");
-                        string targetFileName = file.FullName.Replace(taskVO.SourcePath, taskVO.TargetPath);
-                        //Logger.WriteLog("TASK", "Target file name [" + targetFileName + "].");
-
-                        try
+                        string targetDirName = dir.FullName.Replace(sourceDir.FullName, targetPath);
+                        if (!Directory.Exists(targetDirName))
                         {
-                            if (File.Exists(targetFileName))
-                            {
-                                //Logger.WriteLog("TASK", "Found target file [" + targetFileName + "].");
-                                string sourceFileHash = GetHash(file.FullName);
-                                //Logger.WriteLog("TASK", "Source file hash code: [" + sourceFileHash + "].");
-                                string targetFileHash = GetHash(targetFileName);
-                                //Logger.WriteLog("TASK", "Target file hash code: [" + targetFileHash + "].");
-
-                                if (!sourceFileHash.Equals(targetFileHash))
-                                {
-                                    //Logger.WriteLog("TASK", "File [" + targetFileName + "] is not same with the source [" + file.FullName + "].");
-                                    File.Delete(targetFileName);
-                                    Logger.WriteLog("File [" + targetFileName + "] removed.");
-                                }
-                            }
-                            else
-                            {
-                                //Logger.WriteLog("TASK", "Target file was not found.");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.WriteLog("TASK", ex.Message);
+                            Directory.CreateDirectory(targetDirName);
+                            CopyFile(dir.FullName, targetDirName, filePatterns);
                         }
 
-                        string targetFullFileName = Path.Combine(new string[] { targetDir.FullName, targetFileName });
-                        File.Copy(file.FullName, targetFullFileName);
-                        Logger.WriteLog("TASK", "File [" + file.FullName + "] copied to [" + targetFullFileName + "]");
+                        CopyDir(dir.FullName, targetDirName, dirPatterns, filePatterns);
                     }
                 }
+            }
+        }
+
+        private static void CopyFile(string sourcePath, string targetPath, string[] filePatterns)
+        {
+            DirectoryInfo sourceDir = new DirectoryInfo(sourcePath);
+            foreach (string filePattern in filePatterns)
+            {
+                FileInfo[] files = sourceDir.GetFiles(filePattern, SearchOption.TopDirectoryOnly);
+                if (files != null && files.Length > 0)
+                {
+                    DoCopyFiles(sourcePath, targetPath, files);
+                }
+            }
+        }
+
+        private static void DoCopyFiles(string sourcePath, string targetPath, FileInfo[] files)
+        {
+            DirectoryInfo targetDir = new DirectoryInfo(targetPath);
+            foreach (FileInfo file in files)
+            {
+                //Logger.WriteLog("TASK", "Check source file [" + file.FullName + "].");
+                string targetFileName = file.FullName.Replace(sourcePath, targetPath);
+                //Logger.WriteLog("TASK", "Target file name [" + targetFileName + "].");
+
+                try
+                {
+                    if (File.Exists(targetFileName))
+                    {
+                        //Logger.WriteLog("TASK", "Found target file [" + targetFileName + "].");
+                        string sourceFileHash = GetHash(file.FullName);
+                        //Logger.WriteLog("TASK", "Source file hash code: [" + sourceFileHash + "].");
+                        string targetFileHash = GetHash(targetFileName);
+                        //Logger.WriteLog("TASK", "Target file hash code: [" + targetFileHash + "].");
+
+                        if (sourceFileHash.Equals(targetFileHash))
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        //Logger.WriteLog("TASK", "Target file was not found.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteLog("TASK", ex.Message);
+                }
+
+                string targetFullFileName = Path.Combine(new string[] { targetDir.FullName, targetFileName });
+                File.Copy(file.FullName, targetFullFileName, true);
+                Logger.WriteLog("TASK", "File [" + file.FullName + "] copied to [" + targetFullFileName + "]");
             }
         }
     }

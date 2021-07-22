@@ -8,6 +8,17 @@ public abstract class TaskBaseVO
 
     public DateTime ModifiedTime { get; set; }
 
+    public Int64 Interval { get; set; }
+
+    public DateTime LastRunTime { get; set; }
+
+    public Int64 LastRunTerm { get; set; }
+
+    public DateTime NextRunTime { get; set; }
+
+    public int SessionRunTimes { get; set; }
+
+
     public TaskBaseVO()
 	{
 	}

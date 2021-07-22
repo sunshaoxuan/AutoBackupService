@@ -12,15 +12,29 @@ namespace AutoBackupService.Executor
     {
         public TaskBaseVO TaskVO { get; set; }
 
-        public abstract void Execute();
+        public abstract void BeforeExecute();
+
+        public void Execute()
+        {
+            BeforeExecute();
+
+            try { 
+            DoExecute();
+            }catch(Exception ex)
+            {
+                Logger.WriteLog("TASK", "ERROR occored on execute the task:" + ex.Message);
+            }
+
+            AfterExecute();
+        }
+
+        public abstract void DoExecute();
+
+        public abstract void AfterExecute();
 
         protected static string GetHash(string path)
         {
-            var hash = SHA1.Create();
-            var stream = new FileStream(path, FileMode.Open);
-            byte[] hashByte = hash.ComputeHash(stream);
-            stream.Close();
-            return BitConverter.ToString(hashByte).Replace("-", "");
+            return PublicUtils.GetHash(path);
         }
     }
 }

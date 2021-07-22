@@ -10,7 +10,8 @@ namespace AutoBackupService
     {
         public TaskMethodEnum Method { get; set; }
         public string SourcePath { get; set; }
-        public string[] SourceFileFilters { get; set; }
+        public string[] FilePattern { get; set; }
+        public string[] DirPattern { get; set; }
         public string TargetPath { get; set; }
 
 
@@ -66,6 +67,26 @@ namespace AutoBackupService
                 }
             }
 
+            if (key.ToUpper().Equals("INTERVAL"))
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    Interval = 60000;
+                }
+                else
+                {
+                    bool gotnum = Int64.TryParse(value, out long longNum);
+                    if (gotnum)
+                    {
+                        Interval = longNum;
+                    }
+                    else
+                    {
+                        Interval = 60000;
+                    }
+                }
+            }
+
             if (key.ToUpper().Equals("METHOD"))
             {
                 if (string.IsNullOrEmpty(value))
@@ -74,11 +95,11 @@ namespace AutoBackupService
                 }
                 else
                 {
-                    if (value.ToUpper().Equals("RECU"))
+                    if (value.ToUpper().Equals("RECURSION"))
                     {
                         Method = TaskMethodEnum.Recursion;
                     }
-                    else if (value.ToUpper().Equals("SINGLE"))
+                    else if (value.ToUpper().Equals("CURRENT"))
                     {
                         Method = TaskMethodEnum.Current;
                     }
@@ -89,23 +110,36 @@ namespace AutoBackupService
                 }
             }
 
-            if (key.ToUpper().Equals("SOURCEFILEFILTERS"))
+            if (key.ToUpper().Equals("FILEPATTERN"))
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    SourceFileFilters = new string[] { "*.*" };
+                    FilePattern = new string[] { "*.*" };
                 }
                 else
                 {
-                    SourceFileFilters = value.Split(new char[] { ';', ',', ' ', '\t' });
+                    FilePattern = value.Split(new char[] { ';', ',', ' ', '\t' });
                 }
             }
+
+            if (key.ToUpper().Equals("DIRPATTERN"))
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    DirPattern = new string[] { "*" };
+                }
+                else
+                {
+                    DirPattern = value.Split(new char[] { ';', ',', ' ', '\t' });
+                }
+            }
+
         }
 
 
         public override int GetHashCode()
         {
-            string hashSeed = TaskName + SourcePath + string.Concat(SourceFileFilters.ToArray()) + TargetPath;
+            string hashSeed = TaskName + SourcePath + string.Concat(FilePattern.ToArray()) + TargetPath;
             return hashSeed.GetHashCode();
         }
 
