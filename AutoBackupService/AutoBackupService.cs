@@ -128,7 +128,7 @@ namespace AutoBackupService
             Logger.WriteLog("SERVICE", "Service Started.");
             System.Timers.Timer exeTimer = new System.Timers.Timer
             {
-                Interval = 5000 //执行间隔（毫秒）
+                Interval = 3600000 //执行间隔（毫秒）
             };
             Logger.WriteLog("SERVICE", "Set task scan interval as " + exeTimer.Interval.ToString()+"(ms).");
             exeTimer.Elapsed += new System.Timers.ElapsedEventHandler(RunCheck);//到达时间的时候执行事件； 

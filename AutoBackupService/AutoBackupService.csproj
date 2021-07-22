@@ -94,7 +94,6 @@
     <Compile Include="AutoBackupService.Designer.cs">
       <DependentUpon>AutoBackupService.cs</DependentUpon>
     </Compile>
-    <Compile Include="Class1.cs" />
     <Compile Include="ExecutorFactory.cs" />
     <Compile Include="Executor\CopyTaskExecutor.cs" />
     <Compile Include="Executor\ExecutorBase.cs" />
