@@ -6,3 +6,5 @@
 /.vs
 /AutoBackupService/obj/Release
 /AutoBackupService/bin
+/ABSManager/obj
+/ABSManager/bin
