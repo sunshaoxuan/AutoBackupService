@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoBackupService", "AutoBa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABSManager", "ABSManager\ABSManager.csproj", "{58A0CC3E-5621-4EFB-AED3-E0847FF81473}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "AutoBackupServiceSetup", "AutoBackupServiceSetup\AutoBackupServiceSetup.vdproj", "{162F67BB-9AEE-428E-AA77-8010FFD9E7A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		All|Any CPU = All|Any CPU
@@ -26,6 +28,10 @@ Global
 		{58A0CC3E-5621-4EFB-AED3-E0847FF81473}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58A0CC3E-5621-4EFB-AED3-E0847FF81473}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58A0CC3E-5621-4EFB-AED3-E0847FF81473}.Release|Any CPU.Build.0 = Release|Any CPU
+		{162F67BB-9AEE-428E-AA77-8010FFD9E7A7}.All|Any CPU.ActiveCfg = Debug
+		{162F67BB-9AEE-428E-AA77-8010FFD9E7A7}.Debug|Any CPU.ActiveCfg = Debug
+		{162F67BB-9AEE-428E-AA77-8010FFD9E7A7}.Debug|Any CPU.Build.0 = Debug
+		{162F67BB-9AEE-428E-AA77-8010FFD9E7A7}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

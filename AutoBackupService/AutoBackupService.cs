@@ -10,6 +10,7 @@ namespace AutoBackupService
 {
     public partial class AutoBackupService : ServiceBase
     {
+        public bool DEBUGGING = false;
         public const string CopyTaskType = "COPY";
 
         private const string IniFilename = "TaskData.ini";
@@ -103,19 +104,26 @@ namespace AutoBackupService
 
             foreach(TaskBaseVO task in TaskList)
             {
-                if (task.LastRunTime != null)
+                if (DEBUGGING)
                 {
-                    if (task.LastRunTime.AddMilliseconds(task.Interval).CompareTo(DateTime.Now) > 0)
-                    {
-                        //未到执行时间跳过
-                        continue;
-                    }
+                    RunTask(task);
                 }
-
-                //没在已执行列表中的才可以执行，暂不支持多线程执行同一任务
-                if (!RunningTasks.Contains(task.GetHashCode()))
+                else
                 {
-                    RunTasksWithNewThread(task);
+                    if (task.LastRunTime != null)
+                    {
+                        if (task.LastRunTime.AddMilliseconds(task.Interval).CompareTo(DateTime.Now) > 0)
+                        {
+                            //未到执行时间跳过
+                            continue;
+                        }
+                    }
+
+                    //没在已执行列表中的才可以执行，暂不支持多线程执行同一任务
+                    if (!RunningTasks.Contains(task.GetHashCode()))
+                    {
+                        RunTasksWithNewThread(task);
+                    }
                 }
             }
         }
@@ -149,7 +157,7 @@ namespace AutoBackupService
             Logger.WriteLog("SERVICE", "Service Started.");
             System.Timers.Timer exeTimer = new System.Timers.Timer
             {
-                Interval = 1000 //执行间隔（毫秒）
+                Interval = 600000 //执行间隔（毫秒）
             };
             Logger.WriteLog("SERVICE", "Set task scan interval as " + exeTimer.Interval.ToString()+"(ms).");
             exeTimer.Elapsed += new System.Timers.ElapsedEventHandler(RunCheck);//到达时间的时候执行事件； 

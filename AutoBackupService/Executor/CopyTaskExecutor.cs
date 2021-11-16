@@ -36,55 +36,96 @@ namespace AutoBackupService.Executor
         {
             CopyTaskVO taskVO = (CopyTaskVO)TaskVO;
 
-            if (!taskVO.Method.Equals(CopyTaskVO.TaskMethodEnum.Current))
+            if (taskVO.Method.Equals(CopyTaskVO.TaskMethodEnum.Recursion))
             {
-                CopyDir(taskVO.SourcePath, taskVO.TargetPath, taskVO.DirPattern, taskVO.FilePattern);
+                CopyDir(taskVO.SourcePath, taskVO.TargetPath, taskVO.DirPattern, taskVO.DirExclude, taskVO.FilePattern, taskVO.FileExclude);
             }
 
-            CopyFile(taskVO.SourcePath, taskVO.TargetPath, taskVO.FilePattern);
+            CopyFile(taskVO.SourcePath, taskVO.TargetPath, taskVO.FilePattern, taskVO.DirExclude, taskVO.FileExclude);
         }
 
-        private void CopyDir(string sourcePath, string targetPath, string[] dirPatterns, string[] filePatterns)
+        private void CopyDir(string sourcePath, string targetPath, string[] dirPatterns, string[] dirExcludes,  string[] filePatterns, string[] fileExlcudes)
         {
             DirectoryInfo sourceDir = new DirectoryInfo(sourcePath);
+            if (KeyContains(dirExcludes, sourceDir.Name))
+            {
+                return;
+            }
+
             foreach (string dirPattern in dirPatterns)
             {
-                DirectoryInfo[] dirs = sourceDir.GetDirectories("*", SearchOption.TopDirectoryOnly);
+                DirectoryInfo[] dirs = sourceDir.GetDirectories(dirPattern, SearchOption.TopDirectoryOnly);
                 if (dirs != null && dirs.Length > 0)
                 {
-                    foreach(DirectoryInfo dir in dirs)
+                    foreach (DirectoryInfo dir in dirs)
                     {
+                        if (KeyContains(dirExcludes, dir.Name))
+                        {
+                            continue;
+                        }
+
                         string targetDirName = dir.FullName.Replace(sourceDir.FullName, targetPath);
                         if (!Directory.Exists(targetDirName))
                         {
                             Directory.CreateDirectory(targetDirName);
-                            CopyFile(dir.FullName, targetDirName, filePatterns);
+                            CopyFile(dir.FullName, targetDirName, filePatterns, dirExcludes, fileExlcudes);
                         }
 
-                        CopyDir(dir.FullName, targetDirName, dirPatterns, filePatterns);
+                        CopyDir(dir.FullName, targetDirName, dirPatterns, dirExcludes, filePatterns, fileExlcudes);
                     }
                 }
             }
+
+            CopyFile(sourcePath, targetPath, filePatterns, dirExcludes, fileExlcudes);
         }
 
-        private static void CopyFile(string sourcePath, string targetPath, string[] filePatterns)
+        private static bool KeyContains(string[] dirExcludes, string name)
+        {
+            if(dirExcludes == null || dirExcludes.Length == 0)
+            {
+                return false;
+            }
+            else
+            {
+                foreach(string dirEx in dirExcludes)
+                {
+                    if (dirEx.ToUpper().Equals(name.ToUpper()))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static void CopyFile(string sourcePath, string targetPath, string[] filePatterns, string[] dirExcludes, string[] fileExcludes)
         {
             DirectoryInfo sourceDir = new DirectoryInfo(sourcePath);
+            if (KeyContains(dirExcludes, sourceDir.Name))
+            {
+                return;
+            }
+
             foreach (string filePattern in filePatterns)
             {
                 FileInfo[] files = sourceDir.GetFiles(filePattern, SearchOption.TopDirectoryOnly);
                 if (files != null && files.Length > 0)
                 {
-                    DoCopyFiles(sourcePath, targetPath, files);
+                    DoCopyFiles(sourcePath, targetPath, files, fileExcludes);
                 }
             }
         }
 
-        private static void DoCopyFiles(string sourcePath, string targetPath, FileInfo[] files)
+        private static void DoCopyFiles(string sourcePath, string targetPath, FileInfo[] files, string[] fileExcludes)
         {
             DirectoryInfo targetDir = new DirectoryInfo(targetPath);
             foreach (FileInfo file in files)
             {
+                if (KeyContains(fileExcludes, file.Name))
+                {
+                    continue;
+                }
                 //Logger.WriteLog("TASK", "Check source file [" + file.FullName + "].");
                 string targetFileName = file.FullName.Replace(sourcePath, targetPath);
                 //Logger.WriteLog("TASK", "Target file name [" + targetFileName + "].");
@@ -103,10 +144,14 @@ namespace AutoBackupService.Executor
                         {
                             continue;
                         }
+                        else
+                        {
+                            Logger.WriteLog("TASK", "Target file [" + targetFileName + "] was modified.");
+                        }
                     }
                     else
                     {
-                        //Logger.WriteLog("TASK", "Target file was not found.");
+                        Logger.WriteLog("TASK", "Target file ["+ targetFileName + "] was not found.");
                     }
                 }
                 catch (Exception ex)

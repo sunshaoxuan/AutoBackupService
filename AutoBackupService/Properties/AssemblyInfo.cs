@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // 變更這些屬性的值即可修改組件的相關
 // 資訊。
 [assembly: AssemblyTitle("AutoBackupService")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Automatically schedule backup directories and files to specific paths.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("CNDRP")]
 [assembly: AssemblyProduct("AutoBackupService")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]

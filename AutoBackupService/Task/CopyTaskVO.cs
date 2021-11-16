@@ -13,6 +13,8 @@ namespace AutoBackupService
         public string[] FilePattern { get; set; }
         public string[] DirPattern { get; set; }
         public string TargetPath { get; set; }
+        public string[] FileExclude { get; set; }
+        public string[] DirExclude { get; set; } 
 
 
         public override void InitTaskKeyValue(string key, string value)
@@ -134,6 +136,29 @@ namespace AutoBackupService
                 }
             }
 
+            if (key.ToUpper().Equals("DIREXCLUDE"))
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    DirExclude = new string[] { "*" };
+                }
+                else
+                {
+                    DirExclude = value.Split(new char[] { ';', ',', ' ', '\t' });
+                }
+            }
+
+            if (key.ToUpper().Equals("FILEEXCLUDE"))
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    FileExclude = new string[] { "*" };
+                }
+                else
+                {
+                    FileExclude = value.Split(new char[] { ';', ',', ' ', '\t' });
+                }
+            }
         }
 
 
