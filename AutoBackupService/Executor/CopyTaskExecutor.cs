@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace AutoBackupService.Executor
@@ -27,7 +26,7 @@ namespace AutoBackupService.Executor
             {
                 throw new Exception("任務類型錯誤");
             }
-
+            
             TaskVO.LastRunTime = DateTime.Now;
             Logger.WriteLog("TASK", "Start copy task [" + TaskVO.TaskName + "].");
         }

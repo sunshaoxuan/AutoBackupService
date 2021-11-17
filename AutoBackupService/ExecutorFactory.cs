@@ -1,4 +1,5 @@
 ﻿using AutoBackupService.Executor;
+using AutoBackupService.Task;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,9 @@ namespace AutoBackupService
             if (task is CopyTaskVO)
             {
                 executor = new CopyTaskExecutor();
+            }else if (task is GitTaskVO)
+            {
+                executor = new GitTaskExecutor();
             }
 
             return executor;

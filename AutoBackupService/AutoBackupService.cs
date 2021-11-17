@@ -12,6 +12,7 @@ namespace AutoBackupService
     {
         public bool DEBUGGING = false;
         public const string CopyTaskType = "COPY";
+        public const string GitTaskType = "GIT";
 
         private const string IniFilename = "TaskData.ini";
         private const string TaskPrefix = "TASK";
@@ -63,34 +64,29 @@ namespace AutoBackupService
                     string taskType = INIOperationClass.INIGetStringValue(filePath, secName, "TaskType", string.Empty);
                     //Logger.WriteLog("SERVICE", "Type of task [" + secName+"]: " + taskType);
 
-                    if (!string.IsNullOrEmpty(taskType))
+                    TaskBaseVO task = TaskFactory.CreateTaskVO(taskType);
+
+                    //Logger.WriteLog("SERVICE", "Base task created");
+
+                    if (task != null)
                     {
-                        if (taskType.ToUpper().Equals(CopyTaskType))
+                        string[] keys = INIOperationClass.INIGetAllItemKeys(filePath, secName);
+
+                        //Logger.WriteLog("SERVICE", "Task key count:" + (keys == null ? "0" : keys.Length.ToString()));
+
+                        foreach (string key in keys)
                         {
-                            TaskBaseVO task = TaskFactory.CreateTaskVO(CopyTaskType);
+                            string value = INIOperationClass.INIGetStringValue(filePath, secName, key, string.Empty);
 
-                            //Logger.WriteLog("SERVICE", "Base task created");
+                            //Logger.WriteLog("SERVICE", "Value of task key [" + key+"]: " + value);
 
-                            if (task != null)
-                            {
-                                string[] keys = INIOperationClass.INIGetAllItemKeys(filePath, secName);
-
-                                //Logger.WriteLog("SERVICE", "Task key count:" + (keys == null ? "0" : keys.Length.ToString()));
-
-                                foreach (string key in keys)
-                                {
-                                    string value = INIOperationClass.INIGetStringValue(filePath, secName, key, string.Empty);
-
-                                    //Logger.WriteLog("SERVICE", "Value of task key [" + key+"]: " + value);
-
-                                    task.InitTaskKeyValue(key, value);
-                                }
-
-                                task.SessionRunTimes = 0;
-                                tasks.Add(task);
-                            }
+                            task.InitTaskKeyValue(key, value);
                         }
+
+                        task.SessionRunTimes = 0;
+                        tasks.Add(task);
                     }
+
                 }
             }
 

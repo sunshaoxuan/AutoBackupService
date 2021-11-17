@@ -8,12 +8,39 @@ namespace AutoBackupService
 {
     public class CopyTaskVO : TaskBaseVO
     {
+        /// <summary>
+        /// 任务执行方式
+        /// </summary>
         public TaskMethodEnum Method { get; set; }
+
+        /// <summary>
+        /// 来源路径
+        /// </summary>
         public string SourcePath { get; set; }
+
+        /// <summary>
+        /// 文件过滤
+        /// </summary>
         public string[] FilePattern { get; set; }
+
+        /// <summary>
+        /// 文件夹过滤
+        /// </summary>
         public string[] DirPattern { get; set; }
+
+        /// <summary>
+        /// 目标路径
+        /// </summary>
         public string TargetPath { get; set; }
+
+        /// <summary>
+        /// 排除文件（不支持通配符）
+        /// </summary>
         public string[] FileExclude { get; set; }
+
+        /// <summary>
+        /// 排除文件夹（不支持通配符）
+        /// </summary>
         public string[] DirExclude { get; set; } 
 
 

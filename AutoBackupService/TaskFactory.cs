@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AutoBackupService.Task;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,11 @@ namespace AutoBackupService
 
             if (taskType.Equals(AutoBackupService.CopyTaskType))
             {
-                taskVO= new CopyTaskVO();
+                taskVO = new CopyTaskVO();
+            }
+            else if (taskType.Equals(AutoBackupService.GitTaskType))
+            {
+                taskVO = new GitTaskVO();
             }
 
             return taskVO;
