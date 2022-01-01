@@ -14,27 +14,26 @@ namespace AutoBackupService.Executor
 
         public abstract void BeforeExecute();
 
-        public void Execute()
+        public void Execute() 
         {
+            Logger.WriteLog("TASK", "Enter BeforeExecute()");
             BeforeExecute();
 
-            try { 
-            DoExecute();
-            }catch(Exception ex)
+            try
+            {
+                DoExecute();
+            }
+            catch (Exception ex)
             {
                 Logger.WriteLog("TASK", "ERROR occored on execute the task:" + ex.Message);
             }
 
+            Logger.WriteLog("TASK", "Enter AfterExecute()");
             AfterExecute();
         }
 
         public abstract void DoExecute();
 
         public abstract void AfterExecute();
-
-        protected static string GetHash(string path)
-        {
-            return PublicUtils.GetHash(path);
-        }
     }
 }

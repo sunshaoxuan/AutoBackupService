@@ -28,33 +28,9 @@ namespace AutoBackupService.Task
         /// </summary>
         public string Branch { get; set; }
 
-        public override void InitTaskKeyValue(string key, string value)
+        public new void InitTaskKeyValue(string key, string value)
         {
-            if (key.ToUpper().Equals("TASKNAME"))
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    throw new Exception("任务名称 [TaskName] 不能为空");
-                }
-                TaskName = value;
-            }
-
-            if (key.ToUpper().Equals("CREATEDTIME"))
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    throw new Exception("任务创建时间 [CreatedTime] 不能为空");
-                }
-                CreatedTime = DateTime.Parse(value);
-            }
-
-            if (key.ToUpper().Equals("MODIFIEDTIME"))
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    ModifiedTime = DateTime.Parse(value);
-                }
-            }
+            base.InitTaskKeyValue(key, value);
 
             if (key.ToUpper().Equals("METHOD"))
             {

@@ -11,7 +11,7 @@ namespace AutoBackupService
         /// <summary>
         /// 任务执行方式
         /// </summary>
-        public TaskMethodEnum Method { get; set; }
+        public TaskMethodEnum Method { get; set; } = TaskMethodEnum.Current; //默认复制当前文件夹（不递归子文件夹）
 
         /// <summary>
         /// 来源路径
@@ -21,12 +21,12 @@ namespace AutoBackupService
         /// <summary>
         /// 文件过滤
         /// </summary>
-        public string[] FilePattern { get; set; }
+        public string[] FilePattern { get; set; } = new string[] { "*.*" }; //默认所有文件
 
         /// <summary>
         /// 文件夹过滤
         /// </summary>
-        public string[] DirPattern { get; set; }
+        public string[] DirPattern { get; set; } = new string[] { "*" }; //默认所有文件夹
 
         /// <summary>
         /// 目标路径
@@ -36,41 +36,17 @@ namespace AutoBackupService
         /// <summary>
         /// 排除文件（不支持通配符）
         /// </summary>
-        public string[] FileExclude { get; set; }
+        public string[] FileExclude { get; set; } = new string[] { "" }; //默认不排除
 
         /// <summary>
         /// 排除文件夹（不支持通配符）
         /// </summary>
-        public string[] DirExclude { get; set; } 
+        public string[] DirExclude { get; set; } = new string[] { "" }; //默认不排除
 
 
-        public override void InitTaskKeyValue(string key, string value)
+        public new void InitTaskKeyValue(string key, string value)
         {
-            if (key.ToUpper().Equals("TASKNAME"))
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    throw new Exception("任务名称 [TaskName] 不能为空");
-                }
-                TaskName = value;
-            }
-
-            if (key.ToUpper().Equals("CREATEDTIME"))
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    throw new Exception("任务创建时间 [CreatedTime] 不能为空");
-                }
-                CreatedTime = DateTime.Parse(value);
-            }
-
-            if (key.ToUpper().Equals("MODIFIEDTIME"))
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    ModifiedTime = DateTime.Parse(value);
-                }
-            }
+            base.InitTaskKeyValue(key, value);
 
             if (key.ToUpper().Equals("SOURCEPATH"))
             {
@@ -96,33 +72,9 @@ namespace AutoBackupService
                 }
             }
 
-            if (key.ToUpper().Equals("INTERVAL"))
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    Interval = 60000;
-                }
-                else
-                {
-                    bool gotnum = Int64.TryParse(value, out long longNum);
-                    if (gotnum)
-                    {
-                        Interval = longNum;
-                    }
-                    else
-                    {
-                        Interval = 60000;
-                    }
-                }
-            }
-
             if (key.ToUpper().Equals("METHOD"))
             {
-                if (string.IsNullOrEmpty(value))
-                {
-                    Method = TaskMethodEnum.Current;
-                }
-                else
+                if (!string.IsNullOrEmpty(value))
                 {
                     if (value.ToUpper().Equals("RECURSION"))
                     {
@@ -132,20 +84,12 @@ namespace AutoBackupService
                     {
                         Method = TaskMethodEnum.Current;
                     }
-                    else
-                    {
-                        Method = TaskMethodEnum.Current;
-                    }
                 }
             }
 
             if (key.ToUpper().Equals("FILEPATTERN"))
             {
-                if (string.IsNullOrEmpty(value))
-                {
-                    FilePattern = new string[] { "*.*" };
-                }
-                else
+                if (!string.IsNullOrEmpty(value))
                 {
                     FilePattern = value.Split(new char[] { ';', ',', ' ', '\t' });
                 }
@@ -153,11 +97,7 @@ namespace AutoBackupService
 
             if (key.ToUpper().Equals("DIRPATTERN"))
             {
-                if (string.IsNullOrEmpty(value))
-                {
-                    DirPattern = new string[] { "*" };
-                }
-                else
+                if (!string.IsNullOrEmpty(value))
                 {
                     DirPattern = value.Split(new char[] { ';', ',', ' ', '\t' });
                 }
@@ -165,11 +105,7 @@ namespace AutoBackupService
 
             if (key.ToUpper().Equals("DIREXCLUDE"))
             {
-                if (string.IsNullOrEmpty(value))
-                {
-                    DirExclude = new string[] { "*" };
-                }
-                else
+                if (!string.IsNullOrEmpty(value))
                 {
                     DirExclude = value.Split(new char[] { ';', ',', ' ', '\t' });
                 }
@@ -177,11 +113,7 @@ namespace AutoBackupService
 
             if (key.ToUpper().Equals("FILEEXCLUDE"))
             {
-                if (string.IsNullOrEmpty(value))
-                {
-                    FileExclude = new string[] { "*" };
-                }
-                else
+                if (!string.IsNullOrEmpty(value))
                 {
                     FileExclude = value.Split(new char[] { ';', ',', ' ', '\t' });
                 }

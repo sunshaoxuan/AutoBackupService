@@ -78,10 +78,13 @@
     <ApplicationIcon>documents_2.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
@@ -99,7 +102,10 @@
     <Compile Include="AutoBackupService.Designer.cs">
       <DependentUpon>AutoBackupService.cs</DependentUpon>
     </Compile>
+    <Compile Include="Executor\ZipTaskExecutor.cs" />
     <Compile Include="Executor\GitTaskExecutor.cs" />
+    <Compile Include="HashData\HashFile.cs" />
+    <Compile Include="Task\ZipTaskVO.cs" />
     <Compile Include="Task\GitTaskVO.cs" />
     <Compile Include="UnitTest.cs" />
     <Compile Include="ExecutorFactory.cs" />
@@ -144,7 +150,9 @@
   <ItemGroup>
     <None Include="AutoBackupService_TemporaryKey.pfx" />
     <None Include="Properties\app.manifest" />
-    <None Include="TaskData.ini" />
+    <Content Include="TaskData.ini">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
@@ -161,5 +169,6 @@
   <ItemGroup>
     <Content Include="documents_2.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

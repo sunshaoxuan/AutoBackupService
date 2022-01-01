@@ -3,6 +3,7 @@ using AutoBackupService.Task;
 using AutoBackupService.Utils;
 using System;
 using System.Diagnostics;
+using System.Security.Principal;
 
 namespace AutoBackupService 
 {
@@ -37,14 +38,9 @@ namespace AutoBackupService
         public override void DoExecute()
         {
             GitTaskVO taskVO = (GitTaskVO)TaskVO;
+            CommandRunner git = new CommandRunner(@"gitpull.bat", AppContext.BaseDirectory);
 
-            var git = new CommandRunner("git", taskVO.RepositoryAbsolutePath);
-
-            string info = git.Run(taskVO.Method.ToString().ToLower() +
-                    (string.IsNullOrEmpty(taskVO.RemoteRefRoot) ? "" : " " + taskVO.RemoteRefRoot) +
-                    (string.IsNullOrEmpty(taskVO.Branch) ? "" : " " + taskVO.Branch)
-                );
-
+            string info = git.Run(null);
             Logger.WriteLog("TASK", "Git task [" + TaskVO.TaskName + "] information:" + info);
         }
     }

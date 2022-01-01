@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using Microsoft.VisualBasic.CompilerServices;
+using System;
 using System.IO;
 
 namespace AutoBackupService.Executor
@@ -78,17 +80,17 @@ namespace AutoBackupService.Executor
             CopyFile(sourcePath, targetPath, filePatterns, dirExcludes, fileExlcudes);
         }
 
-        private static bool KeyContains(string[] dirExcludes, string name)
+        private static bool KeyContains(string[] patterns, string beConpairedString)
         {
-            if(dirExcludes == null || dirExcludes.Length == 0)
+            if(patterns == null || patterns.Length == 0)
             {
                 return false;
             }
             else
             {
-                foreach(string dirEx in dirExcludes)
+                foreach(string dirEx in patterns)
                 {
-                    if (dirEx.ToUpper().Equals(name.ToUpper()))
+                    if (Operators.LikeString(beConpairedString.ToUpper(), dirEx.ToUpper(), CompareMethod.Text))
                     {
                         return true;
                     }
@@ -134,9 +136,9 @@ namespace AutoBackupService.Executor
                     if (File.Exists(targetFileName))
                     {
                         //Logger.WriteLog("TASK", "Found target file [" + targetFileName + "].");
-                        string sourceFileHash = GetHash(file.FullName);
+                        string sourceFileHash = PublicUtils.GetFileHash(file.FullName);
                         //Logger.WriteLog("TASK", "Source file hash code: [" + sourceFileHash + "].");
-                        string targetFileHash = GetHash(targetFileName);
+                        string targetFileHash = PublicUtils.GetFileHash(targetFileName);
                         //Logger.WriteLog("TASK", "Target file hash code: [" + targetFileHash + "].");
 
                         if (sourceFileHash.Equals(targetFileHash))

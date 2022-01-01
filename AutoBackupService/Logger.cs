@@ -15,10 +15,11 @@ namespace AutoBackupService
         /// 错误信息
         /// </summary>
         private static string ErrorInfo { get; set; }
+        const string LogFolder = "Log";
 
         public static void WriteLog(string title, string logMsg)
         {
-            string filePath = AppDomain.CurrentDomain.BaseDirectory;
+            string filePath = AppDomain.CurrentDomain.BaseDirectory + @"\" + LogFolder;
             string logFileName = "ABS_LOG_" + DateTime.Now.Year.ToString() + int.Parse(DateTime.Now.Month.ToString()).ToString("00") + int.Parse(DateTime.Now.Day.ToString()).ToString("00") + ".log";
 
             if (!Directory.Exists(filePath))

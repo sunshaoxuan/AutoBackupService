@@ -23,15 +23,16 @@ namespace AutoBackupService.Utils
         {
             var info = new ProcessStartInfo(ExecutablePath, arguments)
             {
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardInput = true,
-                UseShellExecute = false,
+                CreateNoWindow = false,
+                RedirectStandardOutput = false,
+                RedirectStandardInput = false,
+                UseShellExecute = true,
                 WorkingDirectory = WorkingDirectory,
+                Verb = "runas"
             };
             Process prc = Process.Start(info);
             prc.WaitForExit();//等待程序执行完退出进程
-            string strResult= prc.StandardOutput.ReadToEnd();
+            string strResult = "";// prc.StandardOutput.ReadToEnd();
             prc.Close();//关闭进程
             return strResult;
         }

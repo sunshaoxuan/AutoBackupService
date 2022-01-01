@@ -41,7 +41,7 @@ namespace AutoBackupService
             filePath = Path.Combine(new string[] { filePath, IniFilename });
 
             //第一次进入及配置文件有修改才读取任务清单
-            string fileHash = PublicUtils.GetHash(filePath);
+            string fileHash = PublicUtils.GetFileHash(filePath);
             if (fileHash.Equals(TaskFileHash))
             {
                 return TaskList;
@@ -83,7 +83,6 @@ namespace AutoBackupService
                             task.InitTaskKeyValue(key, value);
                         }
 
-                        task.SessionRunTimes = 0;
                         tasks.Add(task);
                     }
 
@@ -106,9 +105,9 @@ namespace AutoBackupService
                 }
                 else
                 {
-                    if (task.LastRunTime != null)
+                    if (task.NextRunTime != null)
                     {
-                        if (task.LastRunTime.AddMilliseconds(task.Interval).CompareTo(DateTime.Now) > 0)
+                        if (task.NextRunTime.CompareTo(DateTime.Now) > 0)
                         {
                             //未到执行时间跳过
                             continue;
@@ -153,7 +152,7 @@ namespace AutoBackupService
             Logger.WriteLog("SERVICE", "Service Started.");
             System.Timers.Timer exeTimer = new System.Timers.Timer
             {
-                Interval = 600000 //执行间隔（毫秒）
+                Interval = 60000 //执行间隔（毫秒）
             };
             Logger.WriteLog("SERVICE", "Set task scan interval as " + exeTimer.Interval.ToString()+"(ms).");
             exeTimer.Elapsed += new System.Timers.ElapsedEventHandler(RunCheck);//到达时间的时候执行事件； 
@@ -161,6 +160,8 @@ namespace AutoBackupService
             Logger.WriteLog("SERVICE", "Set AutoReset as " + exeTimer.AutoReset);
             exeTimer.Enabled = true;//是否执行System.Timers.Timer.Elapsed事件； 
             Logger.WriteLog("SERVICE", "Timer enabled.");
+
+            RunCheck(null, null);
         }
 
         protected override void OnStop()
